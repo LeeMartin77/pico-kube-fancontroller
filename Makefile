@@ -9,7 +9,7 @@ build_binary:
 	cd build/src && make -j4 && cp main.uf2 ../../dist
 
 build_test:
-	gcc src/main.test.c -std=c17 -o dist/test
+	gcc src/main.test.c -o dist/test
 
 build_test_run:
 	make build_test
