@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "blink.c"
 
-char call_sequence [4];
+char blink_call_sequence [4];
 
 typedef struct {
   int pin_number;
@@ -18,13 +18,13 @@ int actual_sleep_calls [2];
 void fake_gpio_put(unsigned int pin_number, char value) {
   actual_gpio_call_args[actual_gpio_callcount].pin_number = pin_number;
   actual_gpio_call_args[actual_gpio_callcount].value = value;
-  call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'G';
+  blink_call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'G';
   actual_gpio_callcount++;
 }
 
 void fake_sleep_ms(unsigned int duration) {
   actual_sleep_calls[actual_sleep_callcount] = duration;
-  call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'S';
+  blink_call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'S';
   actual_sleep_callcount++;
 }
 
@@ -43,8 +43,8 @@ void test_blink() {
   assert(actual_gpio_call_args[0].value == 1);
   assert(actual_gpio_call_args[1].pin_number == expected_pin_number);
   assert(actual_gpio_call_args[1].value == 0);
-  assert(call_sequence[0] == 'G');
-  assert(call_sequence[1] == 'S');
-  assert(call_sequence[2] == 'G');
-  assert(call_sequence[3] == 'S');
+  assert(blink_call_sequence[0] == 'G');
+  assert(blink_call_sequence[1] == 'S');
+  assert(blink_call_sequence[2] == 'G');
+  assert(blink_call_sequence[3] == 'S');
 }
