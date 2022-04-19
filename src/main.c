@@ -16,9 +16,9 @@ int main() {
 #warning blink example requires a board with a regular LED
 #else
     stdio_init_all();
-    const uint TRANSCEIVER_PIN = 2;
-    const uint RPM_PIN = 3;
-    const int number_of_pins = 2;
+    const uint TRANSCEIVER_PIN = 22;
+    const uint RPM_PIN = 14;
+    const int number_of_pins = 1;
     struct PinDefinition pins [number_of_pins];
     pins[0].pin_number = TRANSCEIVER_PIN;
     pins[0].in_or_out = GPIO_OUT;
@@ -28,7 +28,7 @@ int main() {
     while (true) {
         printf("Pulses since last message: %d\n", get_fan_revolutions_since_reset(RPM_PIN));
         reset_revolutions(RPM_PIN);
-        blink(TRANSCEIVER_PIN, 2000, 250, gpio_put, sleep_ms);
+        blink(TRANSCEIVER_PIN, 1000, 1000, gpio_put, sleep_ms);
     }
 #endif
 }
