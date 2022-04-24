@@ -4,7 +4,7 @@ if (TARGET tinyusb_device)
                 )
 
         # pull in common dependencies
-        target_link_libraries(main pico_stdlib)
+        target_link_libraries(main pico_stdlib pico_multicore)
 
         # enable usb output, disable uart output
         pico_enable_stdio_usb(main 1)
