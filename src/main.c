@@ -6,6 +6,13 @@
 #include "fan_monitor.c"
 #include "pico/multicore.h"
 
+
+typedef struct BlinkValues {
+  unsigned int on;
+  unsigned int off;
+} BlinkValues;
+
+
 void core1_entry() {
     const uint TRANSISTOR_PIN = 22;
     const int number_of_gpio_pins = 1;
@@ -14,8 +21,14 @@ void core1_entry() {
     pins[0].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
+    struct BlinkValues blinkValues;
+    blinkValues.on = 75;
+    blinkValues.off = 25;
     while (true) {
-        blink(TRANSISTOR_PIN, 250, 50, gpio_put, sleep_ms);
+        if (multicore_fifo_rvalid() == true) {
+
+        }
+        blink(TRANSISTOR_PIN, blinkValues.on, blinkValues.off, gpio_put, sleep_ms);
     }
 }
 
@@ -27,6 +40,7 @@ int main() {
     while (true) {
         printf("Pulses since last message: %d\n", get_fan_revolutions_since_reset(RPM_PIN));
         reset_revolutions(RPM_PIN);
+        sleep_ms(1000);
     }
 }
 
