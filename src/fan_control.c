@@ -1,7 +1,6 @@
 #include <stdbool.h>
 
-bool fc_last_speed_up = false;
-bool fc_last_speed_dn = false;
+bool fc_button_held = false;
 unsigned int fc_target_fan_speed = 50;
 
 const unsigned int fn_upper_limit = 100;
@@ -18,27 +17,17 @@ void el_fan_control(unsigned int fc_fan_speed_modifer, unsigned int speed_up_gpi
     return;
   }
 
-  if (fc_last_speed_up != speed_up_status > 0 && fc_last_speed_up != true) {
-      fc_last_speed_up = true;
-      if (fc_target_fan_speed < fn_upper_limit) {
-          fc_target_fan_speed = fc_target_fan_speed + fc_fan_speed_modifer;
-          set_fan_speed(fc_target_fan_speed);
+  if (fc_button_held != true && (fc_button_held != speed_up_status > 0 || fc_button_held != speed_dn_status > 0)) {
+      fc_button_held = true;
+      if (speed_up_status > 0 && fc_target_fan_speed < fn_upper_limit) {
+        fc_target_fan_speed = fc_target_fan_speed + fc_fan_speed_modifer;
+        set_fan_speed(fc_target_fan_speed);
+      }
+      if (speed_dn_status > 0 && fc_target_fan_speed > fn_lower_limit) {
+        fc_target_fan_speed = fc_target_fan_speed - fc_fan_speed_modifer;
+        set_fan_speed(fc_target_fan_speed);
       }
   }
 
-  if (!speed_up_status > 0 && fc_last_speed_up == true) {
-      fc_last_speed_up = false;
-  }
-
-  if (fc_last_speed_dn != speed_dn_status > 0 && fc_last_speed_dn != true) {
-      fc_last_speed_dn = true;
-      if (fc_last_speed_dn > fn_lower_limit) {
-          fc_target_fan_speed = fc_target_fan_speed - fc_fan_speed_modifer;
-          set_fan_speed(fc_target_fan_speed);
-      }
-  } 
-  
-  if (!speed_dn_status > 0 && fc_last_speed_dn == true) {
-      fc_last_speed_dn = false;
-  }
+  fc_button_held = speed_up_status > 0 || speed_dn_status > 0;
 }
