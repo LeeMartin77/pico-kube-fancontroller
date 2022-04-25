@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
+
 #include "blink.c"
 #include "enable_pins.c"
 #include "fan_monitor.c"
-#include "pico/multicore.h"
-
+#include "fan_control.c"
 
 typedef struct BlinkValues {
   unsigned int on;
@@ -16,6 +18,7 @@ void set_fan_speed(uint fan_speed) {
     uint off_value = 100 - fan_speed;
     multicore_fifo_push_blocking(fan_speed);
     multicore_fifo_push_blocking(off_value);
+    printf("Target fan percentage: %d\n", fan_speed);
 }
 
 void core1_entry() {
@@ -64,7 +67,6 @@ int main() {
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
 
-
     setup_fan_monitor_pin(RPM_PIN, gpio_init, gpio_set_irq_enabled_with_callback, gpio_acknowledge_irq, GPIO_IRQ_LEVEL_HIGH);
 
     struct repeating_timer timer;
@@ -72,35 +74,9 @@ int main() {
         gpio_put(ALARM_PIN, true);
     }
 
-    // Should be able to turn all of this into a big pile of testable code, not spaghetti
-
-    bool last_speed_up = false;
-    bool last_speed_dn = false;
-    uint target_fan_speed = 50;
-    const uint fan_speed_modifer = 5;
+    const FAN_PERCENT_INCREMENT = 5;
     while (true) {
-        // TODO: Wrap this in tests maybe hmm?
-        if (last_speed_up != gpio_get(SPEED_UP_PIN) > 0 && last_speed_up != true) {
-            last_speed_up = true;
-            if (target_fan_speed < 100) {
-                target_fan_speed = target_fan_speed + fan_speed_modifer;
-                set_fan_speed(target_fan_speed);
-                printf("Target fan percentage: %d\n", target_fan_speed);
-            }
-        } else {
-            last_speed_up = false;
-        }
-
-        if (last_speed_dn != gpio_get(SPEED_DN_PIN) > 0 && last_speed_dn != true) {
-            last_speed_dn = true;
-            if (target_fan_speed > 0) {
-                target_fan_speed = target_fan_speed - fan_speed_modifer;
-                set_fan_speed(target_fan_speed);
-                printf("Target fan percentage: %d\n", target_fan_speed);
-            }
-        } else {
-            last_speed_dn = false;
-        }
+        el_fan_control(FAN_PERCENT_INCREMENT, SPEED_UP_PIN, SPEED_DN_PIN, gpio_get, set_fan_speed);
     }
 }
 
