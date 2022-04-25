@@ -2,9 +2,6 @@
 // We will keep a count per GPIO. Might eat some memory but it's relatively safe.
 int _fanrevcounts [28];
 
-// Redeclaring for purity
-const int fm_GPIO_IRQ_EDGE_RISE = 8;
-
 typedef void (* fm_gpio_init)(unsigned int);
 
 typedef void (* fm_gpio_acknowledge_irq)(unsigned int gpio, unsigned int events);
@@ -24,10 +21,10 @@ int get_fan_revolutions_since_reset(int gpio) {
   return _fanrevcounts[gpio];
 } 
 
-void setup_fan_monitor_pin(int gpio, fm_gpio_init gpio_init, fm_gpio_set_irq_enabled_with_callback gpio_set_irq_enabled_with_callback, fm_gpio_acknowledge_irq dep_gpio_acknowledge_irq) {
+void setup_fan_monitor_pin(int gpio, fm_gpio_init gpio_init, fm_gpio_set_irq_enabled_with_callback gpio_set_irq_enabled_with_callback, fm_gpio_acknowledge_irq dep_gpio_acknowledge_irq, int event) {
   _fanrevcounts[gpio] = 0;
   gpio_init(gpio);
-  gpio_set_irq_enabled_with_callback(gpio, fm_GPIO_IRQ_EDGE_RISE, 1, _pulse_callback);
+  gpio_set_irq_enabled_with_callback(gpio, event, 1, _pulse_callback);
   // We might end up re-enabling this over and over, but this does for now
   _fm_gpio_acknowledge_irq = dep_gpio_acknowledge_irq;
 }

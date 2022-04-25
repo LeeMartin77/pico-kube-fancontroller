@@ -65,7 +65,7 @@ int main() {
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
 
 
-    setup_fan_monitor_pin(RPM_PIN, gpio_init, gpio_set_irq_enabled_with_callback, gpio_acknowledge_irq);
+    setup_fan_monitor_pin(RPM_PIN, gpio_init, gpio_set_irq_enabled_with_callback, gpio_acknowledge_irq, GPIO_IRQ_LEVEL_HIGH);
 
     struct repeating_timer timer;
     if (!add_repeating_timer_ms(1000, get_fan_revolutions_second, NULL, &timer)){

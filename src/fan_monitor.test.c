@@ -60,7 +60,9 @@ void test_fan_monitor() {
   // Initialises Pins @ zero
   const int TEST_PIN_ONE = 4;
 
-  setup_fan_monitor_pin(TEST_PIN_ONE, fm_fake_gpio_init, fm_fake_gpio_set_irq_enabled_with_callback, fm_fake_event_acknowledged);
+  const int event = 1;
+
+  setup_fan_monitor_pin(TEST_PIN_ONE, fm_fake_gpio_init, fm_fake_gpio_set_irq_enabled_with_callback, fm_fake_event_acknowledged, event);
 
   assert(fm_callcounts[0] == 1);
   assert(fm_callcounts[1] == 1);
@@ -71,7 +73,7 @@ void test_fan_monitor() {
 
   assert(_fm_actual_gpio_init_calls[0] == TEST_PIN_ONE);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[0].pin_number == TEST_PIN_ONE);
-  assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[0].event == fm_GPIO_IRQ_EDGE_RISE);
+  assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[0].event == event);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[0].enabled == 1);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[0].callback == _pulse_callback);
   assert(_fm_gpio_acknowledge_irq == fm_fake_event_acknowledged);
@@ -81,10 +83,10 @@ void test_fan_monitor() {
   const int testCount = 96;
   for (int i = 0; i < testCount; i++) {
     assert(fm_callcounts[2] == i);
-    _pulse_callback(TEST_PIN_ONE, fm_GPIO_IRQ_EDGE_RISE);
+    _pulse_callback(TEST_PIN_ONE, event);
     assert(fm_callcounts[2] == i + 1);
     assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i].pin_number == TEST_PIN_ONE);
-    assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i].event == fm_GPIO_IRQ_EDGE_RISE);
+    assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i].event == event);
   }
 
   assert(get_fan_revolutions_since_reset(TEST_PIN_ONE) == testCount);
@@ -95,10 +97,10 @@ void test_fan_monitor() {
   const int testCountTwo = 37;
   for (int i = 0; i < testCountTwo; i++) {
     assert(fm_callcounts[2] == i + testCount);
-    _pulse_callback(TEST_PIN_ONE, fm_GPIO_IRQ_EDGE_RISE);
+    _pulse_callback(TEST_PIN_ONE, event);
     assert(fm_callcounts[2] == i + 1 + testCount);
     assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i + testCount].pin_number == TEST_PIN_ONE);
-    assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i + testCount].event == fm_GPIO_IRQ_EDGE_RISE);
+    assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[i + testCount].event == event);
   }
   
   assert(get_fan_revolutions_since_reset(TEST_PIN_ONE) == testCountTwo);
@@ -106,8 +108,8 @@ void test_fan_monitor() {
 
   // Add a second pin, make sure we can handle it all correctly
   const int TEST_PIN_TWO = 7;
-
-  setup_fan_monitor_pin(TEST_PIN_TWO, fm_fake_gpio_init, fm_fake_gpio_set_irq_enabled_with_callback, fm_fake_event_acknowledged);
+  const int event_two = 0;
+  setup_fan_monitor_pin(TEST_PIN_TWO, fm_fake_gpio_init, fm_fake_gpio_set_irq_enabled_with_callback, fm_fake_event_acknowledged, event_two);
 
   assert(fm_callcounts[0] == 2);
   assert(fm_callcounts[1] == 2);
@@ -115,7 +117,7 @@ void test_fan_monitor() {
 
   assert(_fm_actual_gpio_init_calls[1] == TEST_PIN_TWO);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[1].pin_number == TEST_PIN_TWO);
-  assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[1].event == fm_GPIO_IRQ_EDGE_RISE);
+  assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[1].event == event_two);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[1].enabled == 1);
   assert(_fm_actual_gpio_set_irq_enabled_with_callback_args[1].callback == _pulse_callback);
   assert(_fm_gpio_acknowledge_irq == fm_fake_event_acknowledged);
@@ -127,11 +129,11 @@ void test_fan_monitor() {
   const int PIN_TWO_COUNT = 37;
 
   for (int i = 0; i < PIN_ONE_COUNT; i++) {
-    _pulse_callback(TEST_PIN_ONE, fm_GPIO_IRQ_EDGE_RISE);
+    _pulse_callback(TEST_PIN_ONE, event);
   }
 
   for (int i = 0; i < PIN_TWO_COUNT; i++) {
-    _pulse_callback(TEST_PIN_TWO, fm_GPIO_IRQ_EDGE_RISE);
+    _pulse_callback(TEST_PIN_TWO, event_two);
   }
   
   assert(get_fan_revolutions_since_reset(TEST_PIN_ONE) == PIN_ONE_COUNT);
@@ -146,7 +148,7 @@ void test_fan_monitor() {
   assert(get_fan_revolutions_since_reset(TEST_PIN_ONE) == 0);
   assert(get_fan_revolutions_since_reset(TEST_PIN_TWO) == 0);
 
-  _pulse_callback(TEST_PIN_ONE, fm_GPIO_IRQ_EDGE_RISE);
+  _pulse_callback(TEST_PIN_ONE, event);
   assert(get_fan_revolutions_since_reset(TEST_PIN_ONE) == 1);
   assert(get_fan_revolutions_since_reset(TEST_PIN_TWO) == 0);
 }
