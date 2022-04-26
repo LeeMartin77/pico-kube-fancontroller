@@ -43,7 +43,11 @@ void test_fan_drive() {
     assert(total_sleep_duration == (expected_on_duration + expected_off_duration));
     assert(sleep_durations[1] == expected_on_duration);
     assert(sleep_durations[0] == expected_off_duration);
-    // MAke sure pin is pulled high at end unles spower is 0
-    assert(pin_on);
+    // MAke sure pin is pulled high at end unless power is 0
+    if(expected_on_duration > 0) {
+      assert(pin_on);
+    } else {
+      assert(!pin_on);
+    }
   }
 }
