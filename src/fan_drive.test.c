@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
-#include "blink.c"
+#include "fan_drive.c"
 
 char blink_call_sequence [4];
 
@@ -28,12 +28,12 @@ void fake_sleep_ms(unsigned int duration) {
   actual_sleep_callcount++;
 }
 
-void test_blink() {
+void test_fan_drive() {
   assert(1 == 1);
   unsigned int expected_pin_number = 12;
   unsigned int expected_on_duration = 3849;
   unsigned int expected_off_duration = 7583;
-  blink(expected_pin_number, expected_on_duration, expected_off_duration, fake_gpio_put, fake_sleep_ms);
+  pulse(expected_pin_number, expected_on_duration, expected_off_duration, fake_gpio_put, fake_sleep_ms);
 
   assert(actual_gpio_callcount == 2);
   assert(actual_sleep_callcount == 2);

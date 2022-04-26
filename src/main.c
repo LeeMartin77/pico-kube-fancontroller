@@ -4,10 +4,10 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 
-#include "blink.c"
 #include "enable_pins.c"
-#include "fan_monitor.c"
 #include "fan_control.c"
+#include "fan_drive.c"
+#include "fan_monitor.c"
 
 typedef struct BlinkValues {
   unsigned int on;
@@ -37,7 +37,7 @@ void core1_entry() {
             blinkValues.on = multicore_fifo_pop_blocking();
             blinkValues.off = multicore_fifo_pop_blocking();
         }
-        blink(TRANSISTOR_PIN, blinkValues.on, blinkValues.off, gpio_put, sleep_ms);
+        pulse(TRANSISTOR_PIN, blinkValues.on, blinkValues.off, gpio_put, sleep_ms);
     }
 }
 
