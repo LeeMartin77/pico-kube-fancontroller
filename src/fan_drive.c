@@ -18,9 +18,9 @@ void pulse(unsigned int pin, unsigned int on_percentage, fn_gpio_put gpio_put, f
     sleep_ms(100);
     return;
   }
-  
+
   int off_percentage = 100 - on_percentage;
-  while (on_percentage + off_percentage > 0) {
+  for (int i = 0; i <= 100; i++) {
     if(off_percentage) {
       gpio_put(pin, false);
       sleep_ms(1);
