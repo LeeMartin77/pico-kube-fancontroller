@@ -15,9 +15,7 @@ typedef struct BlinkValues {
 } BlinkValues;
 
 void set_fan_speed(uint fan_speed) {
-    uint off_value = 100 - fan_speed;
     multicore_fifo_push_blocking(fan_speed);
-    multicore_fifo_push_blocking(off_value);
     printf("Target fan percentage: %d\n", fan_speed);
 }
 
@@ -29,15 +27,12 @@ void core1_entry() {
     pins[0].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
-    struct BlinkValues blinkValues;
-    blinkValues.on = 75;
-    blinkValues.off = 25;
+    int power_percentage = 75;
     while (true) {
         if (multicore_fifo_rvalid() == true) {
-            blinkValues.on = multicore_fifo_pop_blocking();
-            blinkValues.off = multicore_fifo_pop_blocking();
+            power_percentage = multicore_fifo_pop_blocking();
         }
-        pulse(TRANSISTOR_PIN, blinkValues.on, blinkValues.off, gpio_put, sleep_ms);
+        pulse(TRANSISTOR_PIN, power_percentage, gpio_put, sleep_ms);
     }
 }
 

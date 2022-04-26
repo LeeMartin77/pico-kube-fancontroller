@@ -38,12 +38,12 @@ void test_fan_drive() {
     expected_off_duration = 100 - i;
     pin_on = 0;
 
-    pulse(expected_pin_number, expected_on_duration, expected_off_duration, fake_gpio_put, fake_sleep_ms);
+    pulse(expected_pin_number, expected_on_duration, fake_gpio_put, fake_sleep_ms);
 
     assert(total_sleep_duration == (expected_on_duration + expected_off_duration));
     assert(sleep_durations[1] == expected_on_duration);
     assert(sleep_durations[0] == expected_off_duration);
-    // MAke sure pin is pulled high at end always
+    // MAke sure pin is pulled high at end unles spower is 0
     assert(pin_on);
   }
 }
