@@ -1,50 +1,37 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include "fan_drive.c"
 
-char blink_call_sequence [4];
-
-typedef struct {
-  int pin_number;
-  char value;
-} gpioArgs;
-
-int actual_gpio_callcount = 0;
-gpioArgs actual_gpio_call_args [2];
-
-int actual_sleep_callcount = 0;
-int actual_sleep_calls [2];
-
-void fake_gpio_put(unsigned int pin_number, char value) {
-  actual_gpio_call_args[actual_gpio_callcount].pin_number = pin_number;
-  actual_gpio_call_args[actual_gpio_callcount].value = value;
-  blink_call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'G';
-  actual_gpio_callcount++;
-}
-
-void fake_sleep_ms(unsigned int duration) {
-  actual_sleep_calls[actual_sleep_callcount] = duration;
-  blink_call_sequence[actual_gpio_callcount + actual_sleep_callcount] = 'S';
-  actual_sleep_callcount++;
-}
-
 void test_fan_drive() {
-  assert(1 == 1);
+
   unsigned int expected_pin_number = 12;
+
+  unsigned int total_sleep_duration = 0;
+  unsigned int sleep_durations [2];
+  sleep_durations[0] = 0;
+  sleep_durations[1] = 0;
+  bool pin_on = 0;
+
+  void fake_gpio_put(unsigned int pin_number, bool value) {
+    assert(expected_pin_number == pin_number);
+    pin_on = value;
+  }
+
+  void fake_sleep_ms(unsigned int duration) {
+    total_sleep_duration = total_sleep_duration + duration;
+    const int pin_index = pin_on ? 1 : 0;
+    sleep_durations[pin_index] = sleep_durations[pin_index] + duration;
+  }
+
   unsigned int expected_on_duration = 3849;
   unsigned int expected_off_duration = 7583;
+  
   pulse(expected_pin_number, expected_on_duration, expected_off_duration, fake_gpio_put, fake_sleep_ms);
 
-  assert(actual_gpio_callcount == 2);
-  assert(actual_sleep_callcount == 2);
-  assert(actual_sleep_calls[0] == expected_on_duration);
-  assert(actual_sleep_calls[1] == expected_off_duration);
-  assert(actual_gpio_call_args[0].pin_number == expected_pin_number);
-  assert(actual_gpio_call_args[0].value == 1);
-  assert(actual_gpio_call_args[1].pin_number == expected_pin_number);
-  assert(actual_gpio_call_args[1].value == 0);
-  assert(blink_call_sequence[0] == 'G');
-  assert(blink_call_sequence[1] == 'S');
-  assert(blink_call_sequence[2] == 'G');
-  assert(blink_call_sequence[3] == 'S');
+  assert(total_sleep_duration == (expected_on_duration + expected_off_duration));
+  assert(sleep_durations[1] == expected_on_duration);
+  assert(sleep_durations[0] == expected_off_duration);
+  // MAke sure pin is pulled high at end always
+  assert(pin_on);
 }
