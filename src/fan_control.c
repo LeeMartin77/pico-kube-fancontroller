@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 bool fc_button_held = false;
-unsigned int fc_target_fan_speed = 75;
+unsigned int fc_target_fan_speed = 80;
 
 const unsigned int fn_upper_limit = 100;
 const unsigned int fn_lower_limit = 0;

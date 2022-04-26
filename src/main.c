@@ -27,7 +27,7 @@ void core1_entry() {
     pins[0].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
-    int power_percentage = 75;
+    int power_percentage = 80;
     while (true) {
         if (multicore_fifo_rvalid() == true) {
             power_percentage = multicore_fifo_pop_blocking();
@@ -69,7 +69,7 @@ int main() {
         gpio_put(ALARM_PIN, true);
     }
 
-    const FAN_PERCENT_INCREMENT = 5;
+    const FAN_PERCENT_INCREMENT = 2;
     while (true) {
         el_fan_control(FAN_PERCENT_INCREMENT, SPEED_UP_PIN, SPEED_DN_PIN, gpio_get, set_fan_speed);
     }
