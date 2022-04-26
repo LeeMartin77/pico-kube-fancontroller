@@ -32,7 +32,7 @@ void core1_entry() {
         if (multicore_fifo_rvalid() == true) {
             power_percentage = multicore_fifo_pop_blocking();
         }
-        pulse(TRANSISTOR_PIN, power_percentage, gpio_put, sleep_ms);
+        pulse(TRANSISTOR_PIN, power_percentage, gpio_put, sleep_us);
     }
 }
 
@@ -40,7 +40,9 @@ void core1_entry() {
 const uint RPM_PIN = 14;
 
 bool get_fan_revolutions_second(struct repeating_timer *t){ 
-    printf("Revolutions Last Second: %d\n", get_fan_revolutions_since_reset(RPM_PIN));
+    // This is actually bogus right now as we'll need to do pulse stretching to grabe the value
+    // https://www.analog.com/en/analog-dialogue/articles/how-to-control-fan-speed.html
+    printf("Tach Pin Reading: %d\n", get_fan_revolutions_since_reset(RPM_PIN));
     reset_revolutions(RPM_PIN);
 }
 
@@ -72,6 +74,7 @@ int main() {
     const FAN_PERCENT_INCREMENT = 2;
     while (true) {
         el_fan_control(FAN_PERCENT_INCREMENT, SPEED_UP_PIN, SPEED_DN_PIN, gpio_get, set_fan_speed);
+        sleep_ms(100);
     }
 }
 
