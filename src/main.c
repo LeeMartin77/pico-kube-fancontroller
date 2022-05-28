@@ -19,15 +19,16 @@ void set_fan_speed(uint fan_speed) {
     printf("Target fan percentage: %d\n", fan_speed);
 }
 
+const uint core1_TRANSISTOR_PIN = 22;
+const int core1_number_of_gpio_pins = 1;
+struct PinDefinition core1_pins [core1_number_of_gpio_pins];
+core1_pins[0].pin_number = core1_TRANSISTOR_PIN;
+core1_pins[0].in_or_out = GPIO_OUT;
+int power_percentage = 80;
+
 void core1_entry() {
-    const uint TRANSISTOR_PIN = 22;
-    const int number_of_gpio_pins = 1;
-    struct PinDefinition pins [number_of_gpio_pins];
-    pins[0].pin_number = TRANSISTOR_PIN;
-    pins[0].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
-    int power_percentage = 80;
     while (true) {
         if (multicore_fifo_rvalid() == true) {
             power_percentage = multicore_fifo_pop_blocking();
@@ -46,32 +47,36 @@ bool get_fan_revolutions_second(struct repeating_timer *t){
     reset_revolutions(RPM_PIN);
 }
 
+const uint SPEED_UP_PIN = 21;
+const uint SPEED_DN_PIN = 20;
+const uint ALARM_PIN = 10;
+const int number_of_gpio_pins = 2;
+struct PinDefinition pins [number_of_gpio_pins];
+
+pins[0].pin_number = SPEED_UP_PIN;
+pins[0].in_or_out = GPIO_IN;
+pins[1].pin_number = SPEED_DN_PIN;
+pins[1].in_or_out = GPIO_IN;
+pins[2].pin_number = ALARM_PIN;
+pins[2].in_or_out = GPIO_OUT;
+
+struct repeating_timer timer;
+
+const FAN_PERCENT_INCREMENT = 2;
+
 int main() {
     stdio_init_all();
     multicore_launch_core1(core1_entry);
     
-    const uint SPEED_UP_PIN = 21;
-    const uint SPEED_DN_PIN = 20;
-    const uint ALARM_PIN = 10;
-    const int number_of_gpio_pins = 2;
-    struct PinDefinition pins [number_of_gpio_pins];
-    pins[0].pin_number = SPEED_UP_PIN;
-    pins[0].in_or_out = GPIO_IN;
-    pins[1].pin_number = SPEED_DN_PIN;
-    pins[1].in_or_out = GPIO_IN;
-    pins[2].pin_number = ALARM_PIN;
-    pins[2].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
 
     setup_fan_monitor_pin(RPM_PIN, gpio_init, gpio_set_irq_enabled_with_callback, gpio_acknowledge_irq, GPIO_IRQ_LEVEL_HIGH);
 
-    struct repeating_timer timer;
     if (!add_repeating_timer_ms(1000, get_fan_revolutions_second, NULL, &timer)){
         gpio_put(ALARM_PIN, true);
     }
 
-    const FAN_PERCENT_INCREMENT = 2;
     while (true) {
         el_fan_control(FAN_PERCENT_INCREMENT, SPEED_UP_PIN, SPEED_DN_PIN, gpio_get, set_fan_speed);
         sleep_ms(100);
