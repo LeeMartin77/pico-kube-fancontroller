@@ -21,19 +21,19 @@ void set_fan_speed(uint fan_speed) {
 
 const uint core1_TRANSISTOR_PIN = 22;
 const int core1_number_of_gpio_pins = 1;
-struct PinDefinition core1_pins [core1_number_of_gpio_pins];
-core1_pins[0].pin_number = core1_TRANSISTOR_PIN;
-core1_pins[0].in_or_out = GPIO_OUT;
-int power_percentage = 80;
 
 void core1_entry() {
+    struct PinDefinition core1_pins [core1_number_of_gpio_pins];
+    core1_pins[0].pin_number = core1_TRANSISTOR_PIN;
+    core1_pins[0].in_or_out = GPIO_OUT;
+    int power_percentage = 80;
     // Only for standard GPIO
-    enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
+    enable_pins(core1_pins, core1_number_of_gpio_pins, gpio_init, gpio_set_dir);
     while (true) {
         if (multicore_fifo_rvalid() == true) {
             power_percentage = multicore_fifo_pop_blocking();
         }
-        pulse(TRANSISTOR_PIN, power_percentage, gpio_put, sleep_us);
+        pulse(core1_TRANSISTOR_PIN, power_percentage, gpio_put, sleep_us);
     }
 }
 
@@ -51,14 +51,6 @@ const uint SPEED_UP_PIN = 21;
 const uint SPEED_DN_PIN = 20;
 const uint ALARM_PIN = 10;
 const int number_of_gpio_pins = 2;
-struct PinDefinition pins [number_of_gpio_pins];
-
-pins[0].pin_number = SPEED_UP_PIN;
-pins[0].in_or_out = GPIO_IN;
-pins[1].pin_number = SPEED_DN_PIN;
-pins[1].in_or_out = GPIO_IN;
-pins[2].pin_number = ALARM_PIN;
-pins[2].in_or_out = GPIO_OUT;
 
 struct repeating_timer timer;
 
@@ -68,6 +60,13 @@ int main() {
     stdio_init_all();
     multicore_launch_core1(core1_entry);
     
+    struct PinDefinition pins [number_of_gpio_pins];
+    pins[0].pin_number = SPEED_UP_PIN;
+    pins[0].in_or_out = GPIO_IN;
+    pins[1].pin_number = SPEED_DN_PIN;
+    pins[1].in_or_out = GPIO_IN;
+    pins[2].pin_number = ALARM_PIN;
+    pins[2].in_or_out = GPIO_OUT;
     // Only for standard GPIO
     enable_pins(pins, number_of_gpio_pins, gpio_init, gpio_set_dir);
 
